@@ -1,0 +1,201 @@
+---
+title: "作业二"
+author: "mawei"
+date: '2020-12-25'
+slug: 作业二
+categories: []
+tags: []
+---
+
+
+
+<div id="球棍模型" class="section level1">
+<h1>- <strong>球棍模型</strong></h1>
+<pre class="r"><code>library(rgl)
+
+x = c(0, 0, 1)
+y = c(0, 1, 3)
+z = c(0, 2, 2)
+plot3d(
+  x,
+  y,
+  z,
+  type = &quot;s&quot;,
+  xlab = &quot;&quot;,
+  ylab = &quot;&quot;,
+  zlab = &quot;&quot;,
+  box = FALSE,
+  axes = F,
+  radius = c(0.25, 0.3, 0.25),
+  col = c(&quot;blue&quot;, &quot;white&quot;, &quot;blue&quot;)
+)
+ind = c(2, 1, 2, 3)
+lines3d(x[ind], y[ind], z[ind], lwd = 2)
+
+
+x = c(0, 0, 1)
+y = c(0, 1, 3)
+z = c(0, 2, 2)
+plot3d(
+  x,
+  y,
+  z,
+  type = &quot;s&quot;,
+  xlab = &quot;&quot;,
+  ylab = &quot;&quot;,
+  zlab = &quot;&quot;,
+  box = FALSE,
+  axes = F,
+  radius = rep(0.3,3),
+  col = rep(&quot;white&quot;, 3)
+)
+ind = c(2, 1, 2, 3)
+lines3d(x[ind], y[ind], z[ind], lwd = 2)</code></pre>
+</div>
+<div id="表调整" class="section level1">
+<h1>- <strong>表调整</strong></h1>
+<div id="原始数据" class="section level2">
+<h2>原始数据</h2>
+<pre class="r"><code>library(tibble)
+library(magrittr)
+library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages --------------------------------------- tidyverse 1.3.0 --</code></pre>
+<pre><code>## √ ggplot2 3.3.2     √ dplyr   1.0.2
+## √ tidyr   1.1.2     √ stringr 1.4.0
+## √ readr   1.4.0     √ forcats 0.5.0
+## √ purrr   0.3.4</code></pre>
+<pre><code>## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+## x tidyr::extract()   masks magrittr::extract()
+## x dplyr::filter()    masks stats::filter()
+## x dplyr::lag()       masks stats::lag()
+## x purrr::set_names() masks magrittr::set_names()</code></pre>
+<pre class="r"><code>td1 &lt;- tribble(
+  ~country, ~year, ~cases, ~population,
+  &quot;Afghanistan&quot;,  1999,   745,  19987071,
+  &quot;Afghanistan&quot;,  2000,  2666,  20595360,
+  &quot;Brazil&quot;,       1999, 37737, 172006362,
+  &quot;Brazil&quot;,       2000, 80488, 174504898,
+  &quot;China&quot;,        1999,212258,1272915272,
+  &quot;China&quot;,        2000,213766,1280428583
+)
+td3 &lt;- td1 %&gt;% transmute(country = country, year = year, rate = paste0(as.character(cases), &quot;/&quot;, as.character(population)))
+td4_1 &lt;- td1[, 1:3] %&gt;% spread(key = &quot;year&quot;, value = &quot;cases&quot;)
+td4_2 &lt;- td1[, c(1, 2, 4)] %&gt;% spread(key = &quot;year&quot;, value = &quot;population&quot;)
+td4 &lt;- merge(td4_1, td4_2, by = &quot;country&quot;)
+names(td4) &lt;- c(&quot;country&quot;, &quot;cases_1999&quot;, &quot;cases_2000&quot;, &quot;population_1999&quot;, &quot;population_2000&quot;)</code></pre>
+</div>
+<div id="表3转为表1" class="section level2">
+<h2>表3转为表1</h2>
+<pre class="r"><code>newcol = matrix(unlist(strsplit(td3$rate, &#39;/&#39;)), ncol = 2, byrow = T)
+td3$cases = newcol[, 1]
+td3$population = newcol[, 2]
+td3 = td3[, -3]
+knitr::kable(td3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">country</th>
+<th align="right">year</th>
+<th align="left">cases</th>
+<th align="left">population</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Afghanistan</td>
+<td align="right">1999</td>
+<td align="left">745</td>
+<td align="left">19987071</td>
+</tr>
+<tr class="even">
+<td align="left">Afghanistan</td>
+<td align="right">2000</td>
+<td align="left">2666</td>
+<td align="left">20595360</td>
+</tr>
+<tr class="odd">
+<td align="left">Brazil</td>
+<td align="right">1999</td>
+<td align="left">37737</td>
+<td align="left">172006362</td>
+</tr>
+<tr class="even">
+<td align="left">Brazil</td>
+<td align="right">2000</td>
+<td align="left">80488</td>
+<td align="left">174504898</td>
+</tr>
+<tr class="odd">
+<td align="left">China</td>
+<td align="right">1999</td>
+<td align="left">212258</td>
+<td align="left">1272915272</td>
+</tr>
+<tr class="even">
+<td align="left">China</td>
+<td align="right">2000</td>
+<td align="left">213766</td>
+<td align="left">1280428583</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="表4转为表1" class="section level2">
+<h2>表4转为表1</h2>
+<pre class="r"><code>data1=td4[,c(1,2,4)]
+data2=td4[,c(1,3,5)]
+colnames(data1)=c(&#39;country&#39;,&#39;cases&#39;,&#39;population&#39;)
+colnames(data2)=c(&#39;country&#39;,&#39;cases&#39;,&#39;population&#39;)
+td4=rbind(data1,data2)
+td4$year=rep(c(1999,2000),1,each=3)
+knitr::kable(td4)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">country</th>
+<th align="right">cases</th>
+<th align="right">population</th>
+<th align="right">year</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Afghanistan</td>
+<td align="right">745</td>
+<td align="right">19987071</td>
+<td align="right">1999</td>
+</tr>
+<tr class="even">
+<td align="left">Brazil</td>
+<td align="right">37737</td>
+<td align="right">172006362</td>
+<td align="right">1999</td>
+</tr>
+<tr class="odd">
+<td align="left">China</td>
+<td align="right">212258</td>
+<td align="right">1272915272</td>
+<td align="right">1999</td>
+</tr>
+<tr class="even">
+<td align="left">Afghanistan</td>
+<td align="right">2666</td>
+<td align="right">20595360</td>
+<td align="right">2000</td>
+</tr>
+<tr class="odd">
+<td align="left">Brazil</td>
+<td align="right">80488</td>
+<td align="right">174504898</td>
+<td align="right">2000</td>
+</tr>
+<tr class="even">
+<td align="left">China</td>
+<td align="right">213766</td>
+<td align="right">1280428583</td>
+<td align="right">2000</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
